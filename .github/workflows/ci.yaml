@@ -1,0 +1,28 @@
+name: CI pipeline
+on:
+  push:
+   branches:
+     - Prod
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      - name: Login To ACR
+        run: az acr login --name ${{ secrets.ACR_NAME }}
+
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t ${{ secrets.ACR_NAME }}.azurecr.io/nodeapp:${{ github.sha }} .
+          docker push ${{ secrets.ACR_NAME }}.azurecr.io/nodeapp:${{ github.sha }}
+
